@@ -1,0 +1,31 @@
+import random
+import shutil
+
+# Fungsi untuk membagi data
+def split_data(src_dir, train_dest_dir, val_dest_dir, split_ratio):
+    files = os.listdir(src_dir)
+    num_files = len(files)
+    num_train = int(num_files * split_ratio)
+    random.shuffle(files)
+
+    train_files = files[:num_train]
+    val_files = files[num_train:]
+
+    for file in train_files:
+        src_path = os.path.join(src_dir, file)
+        dest_path = os.path.join(train_dest_dir, file)
+        shutil.move(src_path, dest_path)
+
+    for file in val_files:
+        src_path = os.path.join(src_dir, file)
+        dest_path = os.path.join(val_dest_dir, file)
+        shutil.move(src_path, dest_path)
+
+# Memanggil fungsi split_data untuk setiap kategori
+split_ratio = 0.6  # 60% untuk training, 40% untuk validasi
+for category in categories:
+    src_category_dir = os.path.join(base_dir, category)
+    train_category_dir = os.path.join(train_dir, category)
+    val_category_dir = os.path.join(val_dir, category)
+
+    split_data(src_category_dir, train_category_dir, val_category_dir, split_ratio)
