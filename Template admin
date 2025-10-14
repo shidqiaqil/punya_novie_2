@@ -1,0 +1,635 @@
+<!DOCTYPE html><html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title><!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  // Tailwind config (optional enhancements)
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          brand: {
+            50: '#f0f9ff',
+            100: '#e0f2fe',
+            200: '#bae6fd',
+            300: '#7dd3fc',
+            400: '#38bdf8',
+            500: '#0ea5e9',
+            600: '#0284c7',
+            700: '#0369a1',
+            800: '#075985',
+            900: '#0c4a6e'
+          }
+        },
+        boxShadow: {
+          soft: '0 10px 25px -10px rgba(0,0,0,0.15)'
+        }
+      }
+    },
+    darkMode: 'class'
+  }
+</script>
+
+<!-- Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-p7x7i6XlQ6i2yWl9tF3qz2QbT1m5Qk4m9f4m0j1e1w8cRkS8xg9n3Ck5Y3FvM2Vq2yqOQ2JZQh9Jm5iY0n2B1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<!-- Chart.js for simple charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+  /* Smooth sidebar collapse */
+  .sidebar-collapsed .sidebar-label { display: none; }
+  .sidebar-collapsed .sidebar { width: 4.25rem; }
+  .sidebar { width: 16rem; transition: width 200ms ease; }
+  .content { transition: margin-left 200ms ease; }
+  .sidebar-collapsed .content { margin-left: 4.25rem; }
+  @media (min-width: 1024px) {
+    .content { margin-left: 16rem; }
+  }
+</style>
+
+  </head>  <body class="h-full bg-gray-50 text-gray-800 dark:bg-gray-950 dark:text-gray-100">
+    <div id="app" class="min-h-screen flex">
+      <!-- Sidebar -->
+      <aside id="sidebar" class="sidebar fixed inset-y-0 left-0 z-40 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-gray-900/80 border-r border-gray-200 dark:border-gray-800 shadow-soft hidden lg:flex flex-col">
+        <div class="flex items-center gap-2 px-4 h-16">
+          <div class="h-9 w-9 grid place-content-center rounded-xl bg-brand-500 text-white text-lg font-bold">A</div>
+          <div class="sidebar-label">
+            <div class="text-lg font-semibold">Admin</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">Dashboard</div>
+          </div>
+        </div>
+        <nav class="mt-2 px-2 overflow-y-auto">
+          <ul class="space-y-1">
+            <li>
+              <a href="#" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium bg-brand-50 text-brand-700 dark:bg-gray-800 dark:text-brand-300">
+                <i class="fa-solid fa-house"></i>
+                <span class="sidebar-label">Overview</span>
+              </a>
+            </li>
+            <li>
+              <a href="#analytics" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800">
+                <i class="fa-solid fa-chart-line"></i>
+                <span class="sidebar-label">Analytics</span>
+              </a>
+            </li>
+            <li>
+              <a href="#users" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800">
+                <i class="fa-solid fa-user-group"></i>
+                <span class="sidebar-label">Users</span>
+              </a>
+            </li>
+            <li>
+              <a href="#content" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800">
+                <i class="fa-solid fa-layer-group"></i>
+                <span class="sidebar-label">Content</span>
+              </a>
+            </li>
+            <li>
+              <a href="#settings" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800">
+                <i class="fa-solid fa-gear"></i>
+                <span class="sidebar-label">Settings</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+        <div class="mt-auto p-3">
+          <div class="rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white p-4">
+            <div class="text-sm font-medium">Storage</div>
+            <div class="mt-3 h-2.5 w-full bg-white/20 rounded-full">
+              <div class="h-2.5 rounded-full bg-white/90" style="width: 62%"></div>
+            </div>
+            <div class="mt-2 text-xs text-white/80">62% of 100 GB</div>
+          </div>
+        </div>
+      </aside><!-- Mobile top bar -->
+  <header class="fixed lg:hidden inset-x-0 top-0 z-30 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800">
+    <div class="h-14 flex items-center gap-3 px-4">
+      <button id="btn-open-drawer" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="h-8 w-8 grid place-content-center rounded-lg bg-brand-500 text-white text-sm font-bold">A</div>
+      <span class="font-semibold">Admin</span>
+      <div class="ml-auto flex items-center gap-2">
+        <button id="btn-dark-mobile" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" title="Toggle dark mode">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div id="drawer" class="fixed inset-0 z-40 lg:hidden hidden">
+    <div class="absolute inset-0 bg-black/40" id="drawer-backdrop"></div>
+    <aside class="absolute left-0 top-0 bottom-0 w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 p-3">
+      <div class="flex items-center gap-2 px-2 h-14">
+        <div class="h-9 w-9 grid place-content-center rounded-xl bg-brand-500 text-white text-lg font-bold">A</div>
+        <div>
+          <div class="text-lg font-semibold">Admin</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">Dashboard</div>
+        </div>
+        <button id="btn-close-drawer" class="ml-auto p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <nav class="mt-2">
+        <ul class="space-y-1">
+          <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fa-solid fa-house"></i> Overview</a></li>
+          <li><a href="#analytics" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
+          <li><a href="#users" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fa-solid fa-user-group"></i> Users</a></li>
+          <li><a href="#content" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fa-solid fa-layer-group"></i> Content</a></li>
+          <li><a href="#settings" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fa-solid fa-gear"></i> Settings</a></li>
+        </ul>
+      </nav>
+    </aside>
+  </div>
+
+  <!-- Main content -->
+  <main class="content w-full lg:ml-64 pt-16 lg:pt-0">
+    <!-- Topbar (desktop) -->
+    <div class="hidden lg:block sticky top-0 z-20 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800">
+      <div class="h-16 flex items-center gap-3 px-6">
+        <button id="btn-toggle-sidebar" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" title="Collapse sidebar">
+          <i class="fa-solid fa-grip-lines"></i>
+        </button>
+
+        <div class="relative max-w-lg w-full">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          <input id="search" type="text" placeholder="Search anything…" class="w-full pl-10 pr-24 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800/70 border border-transparent focus:border-brand-400 outline-none" />
+          <button id="btn-search" class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 text-sm rounded-lg bg-brand-600 text-white hover:bg-brand-700">Search</button>
+        </div>
+
+        <div class="ml-auto flex items-center gap-2">
+          <button id="btn-dark" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" title="Toggle dark mode">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+          <button class="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" title="Notifications">
+            <i class="fa-regular fa-bell"></i>
+            <span class="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center text-[10px] font-bold bg-rose-500 text-white rounded-full w-4 h-4">3</span>
+          </button>
+
+          <!-- Profile dropdown -->
+          <div class="relative">
+            <button id="btn-profile" class="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
+              <img src="https://i.pravatar.cc/40?img=1" alt="avatar" class="h-8 w-8 rounded-lg object-cover" />
+              <div class="text-left">
+                <div class="text-sm font-semibold leading-tight">Alex</div>
+                <div class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">Administrator</div>
+              </div>
+              <i class="fa-solid fa-chevron-down text-xs ml-1"></i>
+            </button>
+            <div id="menu-profile" class="hidden absolute right-0 mt-2 w-44 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-soft overflow-hidden">
+              <a href="#" class="block px-3 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-800">Profile</a>
+              <a href="#settings" class="block px-3 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-800">Settings</a>
+              <hr class="border-gray-200 dark:border-gray-800" />
+              <a href="#" class="block px-3 py-2.5 text-sm text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-gray-800">Log out</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content area -->
+    <section class="p-4 sm:p-6 space-y-6">
+      <!-- Breadcrumbs -->
+      <div class="text-sm text-gray-500 dark:text-gray-400">
+        <a href="#" class="hover:underline">Home</a>
+        <span class="mx-2">/</span>
+        <span class="font-medium text-gray-700 dark:text-gray-200">Overview</span>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-sm text-gray-500">Revenue</div>
+              <div class="mt-1 text-2xl font-bold">$42,860</div>
+              <div class="mt-1 text-xs text-emerald-600">+12.4% vs last week</div>
+            </div>
+            <div class="h-12 w-12 grid place-content-center rounded-xl bg-emerald-50 text-emerald-600">
+              <i class="fa-solid fa-sack-dollar text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-sm text-gray-500">Active Users</div>
+              <div class="mt-1 text-2xl font-bold">8,142</div>
+              <div class="mt-1 text-xs text-emerald-600">+3.1% today</div>
+            </div>
+            <div class="h-12 w-12 grid place-content-center rounded-xl bg-indigo-50 text-indigo-600">
+              <i class="fa-solid fa-user-group text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-sm text-gray-500">Conversion</div>
+              <div class="mt-1 text-2xl font-bold">3.78%</div>
+              <div class="mt-1 text-xs text-rose-600">-0.6% this week</div>
+            </div>
+            <div class="h-12 w-12 grid place-content-center rounded-xl bg-rose-50 text-rose-600">
+              <i class="fa-solid fa-rotate text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-sm text-gray-500">Tickets</div>
+              <div class="mt-1 text-2xl font-bold">27</div>
+              <div class="mt-1 text-xs text-gray-500">5 open / 22 closed</div>
+            </div>
+            <div class="h-12 w-12 grid place-content-center rounded-xl bg-amber-50 text-amber-600">
+              <i class="fa-solid fa-headset text-xl"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts & Activity -->
+      <div id="analytics" class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div class="xl:col-span-2 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-base font-semibold">Traffic (Last 7 days)</h3>
+            <div class="flex items-center gap-2">
+              <button data-range="7" class="btn-range px-3 py-1.5 text-xs rounded-lg bg-gray-100 dark:bg-gray-800">7d</button>
+              <button data-range="30" class="btn-range px-3 py-1.5 text-xs rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">30d</button>
+              <button data-range="90" class="btn-range px-3 py-1.5 text-xs rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">90d</button>
+            </div>
+          </div>
+          <canvas id="lineChart" height="120"></canvas>
+        </div>
+
+        <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
+          <h3 class="text-base font-semibold mb-3">Top Channels</h3>
+          <ul class="space-y-3">
+            <li class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="h-8 w-8 rounded-lg bg-brand-100 text-brand-700 grid place-content-center"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <span>Search</span>
+              </div>
+              <span class="font-semibold">45%</span>
+            </li>
+            <li class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="h-8 w-8 rounded-lg bg-indigo-100 text-indigo-700 grid place-content-center"><i class="fa-brands fa-facebook"></i></span>
+                <span>Social</span>
+              </div>
+              <span class="font-semibold">28%</span>
+            </li>
+            <li class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="h-8 w-8 rounded-lg bg-amber-100 text-amber-700 grid place-content-center"><i class="fa-solid fa-link"></i></span>
+                <span>Referrals</span>
+              </div>
+              <span class="font-semibold">18%</span>
+            </li>
+            <li class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="h-8 w-8 rounded-lg bg-emerald-100 text-emerald-700 grid place-content-center"><i class="fa-solid fa-envelope"></i></span>
+                <span>Email</span>
+              </div>
+              <span class="font-semibold">9%</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Users Table -->
+      <div id="users" class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-base font-semibold">Users</h3>
+          <div class="flex items-center gap-2">
+            <div class="relative">
+              <input id="filter-users" type="text" placeholder="Filter…" class="pl-3 pr-9 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-brand-400 outline-none text-sm" />
+              <i class="fa-solid fa-filter absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            </div>
+            <button id="btn-add-user" class="px-3 py-2 rounded-lg bg-brand-600 text-white hover:bg-brand-700 text-sm"><i class="fa-solid fa-plus mr-1.5"></i>Add user</button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="text-left text-gray-500">
+              <tr>
+                <th class="py-2 px-3">Name</th>
+                <th class="py-2 px-3">Email</th>
+                <th class="py-2 px-3">Role</th>
+                <th class="py-2 px-3">Status</th>
+                <th class="py-2 px-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="user-tbody" class="divide-y divide-gray-200 dark:divide-gray-800">
+              <!-- Rows injected by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex items-center justify-between pt-3">
+          <div class="text-xs text-gray-500" id="page-meta">Showing 1–10 of 30</div>
+          <div class="flex items-center gap-2">
+            <button id="prev-page" class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 disabled:opacity-50">Prev</button>
+            <button id="next-page" class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800">Next</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content Manager (Tabs) -->
+      <div id="content" class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
+        <div class="mb-3 flex items-center gap-2">
+          <button data-tab="posts" class="tab-btn px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm">Posts</button>
+          <button data-tab="media" class="tab-btn px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-sm">Media</button>
+          <button data-tab="drafts" class="tab-btn px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-sm">Drafts</button>
+        </div>
+        <div id="tab-posts" class="tab-panel grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <!-- Cards injected by JS -->
+        </div>
+        <div id="tab-media" class="tab-panel hidden">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3" id="media-grid"></div>
+        </div>
+        <div id="tab-drafts" class="tab-panel hidden">
+          <ul id="draft-list" class="list-disc pl-5 space-y-1"></ul>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div id="settings" class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
+        <h3 class="text-base font-semibold mb-4">Settings</h3>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <label class="block text-sm">Site Name
+              <input type="text" class="mt-1 w-full px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-brand-400 outline-none" value="My Awesome Admin" />
+            </label>
+            <label class="block text-sm">Timezone
+              <select class="mt-1 w-full px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-brand-400 outline-none">
+                <option>Asia/Jakarta (WIB)</option>
+                <option>Asia/Singapore</option>
+                <option>UTC</option>
+              </select>
+            </label>
+          </div>
+          <div class="space-y-3">
+            <label class="flex items-center gap-2 text-sm">
+              <input id="toggle-2fa" type="checkbox" class="h-4 w-4" />
+              Enable 2‑factor authentication
+            </label>
+            <label class="flex items-center gap-2 text-sm">
+              <input id="toggle-logs" type="checkbox" class="h-4 w-4" checked />
+              Keep activity logs for 90 days
+            </label>
+          </div>
+        </div>
+        <div class="mt-4">
+          <button class="px-4 py-2 rounded-lg bg-brand-600 text-white hover:bg-brand-700">Save changes</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="py-6 text-center text-xs text-gray-500">© <span id="year"></span> Admin — Built with Tailwind</footer>
+  </main>
+</div>
+
+<!-- Add User Modal -->
+<div id="modal" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-black/50"></div>
+  <div class="relative max-w-md mx-auto mt-24 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 shadow-soft">
+    <div class="flex items-center justify-between">
+      <h3 class="text-base font-semibold">Add new user</h3>
+      <button id="modal-close" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="mt-3 space-y-3">
+      <label class="block text-sm">Full name
+        <input id="new-name" type="text" class="mt-1 w-full px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-brand-400 outline-none" placeholder="Jane Doe" />
+      </label>
+      <label class="block text-sm">Email
+        <input id="new-email" type="email" class="mt-1 w-full px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-brand-400 outline-none" placeholder="jane@company.com" />
+      </label>
+      <label class="block text-sm">Role
+        <select id="new-role" class="mt-1 w-full px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-brand-400 outline-none">
+          <option>Editor</option>
+          <option>Viewer</option>
+          <option>Admin</option>
+        </select>
+      </label>
+    </div>
+    <div class="mt-4 flex justify-end gap-2">
+      <button id="modal-cancel" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800">Cancel</button>
+      <button id="modal-save" class="px-4 py-2 rounded-lg bg-brand-600 text-white hover:bg-brand-700">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ======= Dark mode persistence =======
+  const root = document.documentElement;
+  const DARK_KEY = 'admin-dark-mode';
+  function applyDarkPreference() {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const saved = localStorage.getItem(DARK_KEY);
+    const useDark = saved ? saved === 'true' : prefersDark;
+    root.classList.toggle('dark', useDark);
+  }
+  applyDarkPreference();
+  const toggleDark = () => {
+    const enabled = !root.classList.contains('dark');
+    root.classList.toggle('dark', enabled);
+    localStorage.setItem(DARK_KEY, String(enabled));
+  };
+  document.getElementById('btn-dark')?.addEventListener('click', toggleDark);
+  document.getElementById('btn-dark-mobile')?.addEventListener('click', toggleDark);
+
+  // ======= Sidebar collapse (desktop) =======
+  const app = document.getElementById('app');
+  const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+  btnToggleSidebar?.addEventListener('click', () => {
+    app.classList.toggle('sidebar-collapsed');
+  });
+
+  // ======= Mobile drawer =======
+  const drawer = document.getElementById('drawer');
+  const openDrawer = () => drawer.classList.remove('hidden');
+  const closeDrawer = () => drawer.classList.add('hidden');
+  document.getElementById('btn-open-drawer')?.addEventListener('click', openDrawer);
+  document.getElementById('btn-close-drawer')?.addEventListener('click', closeDrawer);
+  document.getElementById('drawer-backdrop')?.addEventListener('click', closeDrawer);
+
+  // ======= Profile dropdown =======
+  const btnProfile = document.getElementById('btn-profile');
+  const menuProfile = document.getElementById('menu-profile');
+  btnProfile?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    menuProfile?.classList.toggle('hidden');
+  });
+  document.addEventListener('click', () => menuProfile?.classList.add('hidden'));
+
+  // ======= Simple search action =======
+  document.getElementById('btn-search')?.addEventListener('click', () => {
+    const q = document.getElementById('search').value.trim();
+    if (!q) return;
+    alert('Search: ' + q);
+  });
+
+  // ======= Chart.js line chart =======
+  const ctx = document.getElementById('lineChart');
+  const makeSeries = (n = 7) => Array.from({ length: n }, () => Math.floor(80 + Math.random() * 60));
+  let chart;
+  function renderChart(days = 7) {
+    const labels = Array.from({ length: days }, (_, i) => new Date(Date.now() - (days - i - 1) * 86400000).toLocaleDateString());
+    const data = makeSeries(days);
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Visits',
+          data,
+          borderWidth: 2,
+          tension: 0.35,
+          pointRadius: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: false } },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+  renderChart(7);
+
+  document.querySelectorAll('.btn-range').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.btn-range').forEach(b => b.classList.remove('bg-gray-100'));
+      btn.classList.add('bg-gray-100');
+      renderChart(parseInt(btn.dataset.range, 10));
+    });
+  });
+
+  // ======= Users table (mock) =======
+  const users = Array.from({ length: 30 }, (_, i) => ({
+    name: `User ${i + 1}`,
+    email: `user${i + 1}@example.com`,
+    role: ['Admin', 'Editor', 'Viewer'][i % 3],
+    status: i % 4 === 0 ? 'Suspended' : 'Active'
+  }));
+
+  const tbody = document.getElementById('user-tbody');
+  const pageMeta = document.getElementById('page-meta');
+  const perPage = 10;
+  let page = 1;
+
+  function renderUsers() {
+    const start = (page - 1) * perPage;
+    const slice = users.slice(start, start + perPage);
+    tbody.innerHTML = slice.map(u => `
+      <tr>
+        <td class="py-3 px-3">${u.name}</td>
+        <td class="py-3 px-3 text-gray-500">${u.email}</td>
+        <td class="py-3 px-3">
+          <span class="px-2 py-1 rounded-lg text-xs ${u.role==='Admin' ? 'bg-rose-50 text-rose-600' : u.role==='Editor' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}">${u.role}</span>
+        </td>
+        <td class="py-3 px-3">
+          <span class="inline-flex items-center gap-1.5 text-xs ${u.status==='Active' ? 'text-emerald-600' : 'text-gray-500'}">
+            <span class="h-2 w-2 rounded-full ${u.status==='Active' ? 'bg-emerald-500' : 'bg-gray-400'}"></span>
+            ${u.status}
+          </span>
+        </td>
+        <td class="py-3 px-3 text-right">
+          <button class="px-2 py-1.5 text-xs rounded-lg bg-gray-100 dark:bg-gray-800">Edit</button>
+          <button class="ml-1.5 px-2 py-1.5 text-xs rounded-lg bg-rose-50 text-rose-600">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+    pageMeta.textContent = `Showing ${start + 1}–${Math.min(start + perPage, users.length)} of ${users.length}`;
+    document.getElementById('prev-page').disabled = page === 1;
+    document.getElementById('next-page').disabled = start + perPage >= users.length;
+  }
+  renderUsers();
+
+  document.getElementById('prev-page').addEventListener('click', () => { page--; renderUsers(); });
+  document.getElementById('next-page').addEventListener('click', () => { page++; renderUsers(); });
+
+  // Simple filter (client-side)
+  document.getElementById('filter-users').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    rows.forEach(r => {
+      const text = r.textContent.toLowerCase();
+      r.classList.toggle('hidden', !text.includes(q));
+    });
+  });
+
+  // ======= Content tabs + mock data =======
+  const tabs = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+  tabs.forEach(btn => btn.addEventListener('click', () => {
+    tabs.forEach(b => b.classList.remove('bg-gray-100'));
+    btn.classList.add('bg-gray-100');
+    panels.forEach(p => p.classList.add('hidden'));
+    document.getElementById(`tab-${btn.dataset.tab}`).classList.remove('hidden');
+  }));
+
+  const posts = Array.from({ length: 6 }, (_, i) => ({
+    title: `Post #${i + 1}`,
+    excerpt: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio.',
+    date: new Date(Date.now() - i * 86400000).toLocaleDateString()
+  }));
+  document.getElementById('tab-posts').innerHTML = posts.map(p => `
+    <article class="rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+      <h4 class="font-semibold">${p.title}</h4>
+      <p class="mt-1 text-sm text-gray-500">${p.excerpt}</p>
+      <div class="mt-3 flex items-center justify-between text-xs text-gray-500">
+        <span>${p.date}</span>
+        <div class="space-x-1">
+          <button class="px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800">Edit</button>
+          <button class="px-2 py-1 rounded-lg bg-rose-50 text-rose-600">Delete</button>
+        </div>
+      </div>
+    </article>
+  `).join('');
+
+  const mediaGrid = document.getElementById('media-grid');
+  mediaGrid.innerHTML = Array.from({ length: 12 }, (_, i) => `
+    <div class="aspect-square rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
+      <img class="h-full w-full object-cover" src="https://picsum.photos/seed/${i+1}/300/300" alt="media ${i+1}" />
+    </div>
+  `).join('');
+
+  const draftList = document.getElementById('draft-list');
+  draftList.innerHTML = Array.from({ length: 5 }, (_, i) => `<li>Draft idea #${i+1}</li>`).join('');
+
+  // ======= Modal (Add User) =======
+  const modal = document.getElementById('modal');
+  const openModal = () => modal.classList.remove('hidden');
+  const closeModal = () => modal.classList.add('hidden');
+  document.getElementById('btn-add-user').addEventListener('click', openModal);
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  document.getElementById('modal-cancel').addEventListener('click', closeModal);
+  document.getElementById('modal-save').addEventListener('click', () => {
+    const name = document.getElementById('new-name').value.trim();
+    const email = document.getElementById('new-email').value.trim();
+    const role = document.getElementById('new-role').value;
+    if (!name || !email) return alert('Please fill all fields');
+    users.unshift({ name, email, role, status: 'Active' });
+    page = 1; renderUsers(); closeModal();
+  });
+
+  // Year in footer
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+
+  </body>
+</html>
